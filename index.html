@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Tes KESWA (Seleksi TNI/POLRI)</title>
+    <title>Aplikasi Tes KESWA by Binjas Perkasa</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         #app-container { background-color: #ffffff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); width: 100%; max-width: 800px; padding: 30px 40px; text-align: center; }
@@ -35,6 +35,13 @@
         #final-verdict { padding: 20px; font-size: 1.8em; font-weight: bold; color: white; border-radius: 8px; margin-bottom: 20px; text-transform: uppercase; }
         .verdict-ms { background-color: #27ae60; }
         .verdict-tms { background-color: #c0392b; }
+        #clinical-scales-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #clinical-scales-table th, #clinical-scales-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        #clinical-scales-table th { background-color: #ecf0f1; }
+        .score-interpretation { font-weight: bold; }
+        .score-low { color: #2c3e50; }
+        .score-moderate { color: #f39c12; }
+        .score-high { color: #c0392b; }
         .disclaimer { font-size: 0.8em; color: #e74c3c; font-weight: bold; margin-top: 20px; border: 1px dashed #e74c3c; padding: 10px; border-radius: 5px; text-align: center; }
         [style*="display: none"] { display: none !important; }
         
@@ -44,8 +51,9 @@
             #print-btn, .disclaimer, #answer-buttons, #progress-container, #timer, #question-container, #test-options-buttons, #welcome-container, #options-container, #test-container { display: none !important; }
             #result-container { display: block !important; }
             .analysis-block, .validity-block { background-color: #fff; }
-            #final-verdict { background-color: #27ae60 !important; } /* Paksa warna cetak */
-            .verdict-tms { background-color: #c0392b !important; } /* Paksa warna cetak */
+            #final-verdict, .verdict-ms, .verdict-tms { color: white !important; }
+            .verdict-ms { background-color: #27ae60 !important; }
+            .verdict-tms { background-color: #c0392b !important; }
         }
     </style>
 </head>
@@ -94,36 +102,54 @@
             <h2>Hasil Analisis untuk <span id="result-user-name"></span></h2>
             <div id="final-verdict"></div>
             <div id="retest-recommendation" style="font-style: italic; margin-top: -10px; margin-bottom: 20px;"></div>
+            
             <div id="validity-analysis"></div>
+            
             <div id="personality-analysis" style="display: none;">
                 <hr>
-                <h3>Analisis Kepribadian (Konteks Seleksi)</h3>
+                <h3>Analisis Kepribadian Umum</h3>
                 <p id="score-summary"></p>
                 <div id="analysis-result"></div>
             </div>
-            <button id="print-btn" class="btn btn-secondary" onclick="window.print()">Cetak / Simpan Hasil</button>
-            <div class="disclaimer">
-                <strong>PENTING:</strong> Analisis ini adalah simulasi dan BUKAN diagnosis klinis. Hasil ini tidak menggantikan evaluasi mendalam oleh psikolog profesional.
+
+            <div id="clinical-scales-container" style="display: none;">
+                <hr>
+                <h3>Analisis Skala Klinis (Simulasi MMPI)</h3>
+                <div class="disclaimer" style="text-align:left; color: #d35400; border-color: #d35400;">
+                    <strong>Peringatan:</strong> Analisis berikut adalah simulasi edukatif dan BUKAN hasil tes MMPI-2 yang sebenarnya. Pemetaan soal bersifat konseptual dan tidak memiliki validitas empiris.
+                </div>
+                <div id="clinical-scales-analysis"></div>
             </div>
+
+            <button id="print-btn" class="btn btn-secondary" onclick="window.print()" style="margin-top:20px;">Cetak / Simpan Hasil</button>
         </div>
     </div>
 
 <script>
-// --- KONFIGURASI SKALA VALIDITAS (SIMULASI) ---
+// --- KONFIGURASI SKALA ---
 const validityScales = { L: { 45: 'TIDAK', 75: 'TIDAK', 93: 'TIDAK', 120: 'TIDAK', 225: 'TIDAK', 316: 'TIDAK', 393: 'TIDAK', 465: 'TIDAK', 481: 'TIDAK', 503: 'YA' }, F: { 27: 'YA', 50: 'YA', 66: 'YA', 151: 'YA', 184: 'YA', 200: 'YA', 275: 'YA', 291: 'YA', 350: 'YA', 420: 'YA', 433: 'YA', 476: 'YA', 554: 'YA' }, K: { 26: 'YA', 36: 'YA', 79: 'TIDAK', 138: 'TIDAK', 158: 'TIDAK', 170: 'YA', 236: 'YA', 336: 'TIDAK', 408: 'TIDAK', 416: 'TIDAK' } };
-// --- INDEKS SOAL UNTUK VERSI TES 120 SOAL ---
 const selected120Indices = [1, 2, 3, 5, 8, 10, 13, 16, 21, 22, 24, 26, 27, 28, 32, 33, 35, 36, 39, 40, 41, 43, 45, 48, 50, 52, 56, 61, 62, 66, 74, 75, 76, 79, 84, 86, 90, 91, 93, 94, 97, 100, 102, 104, 106, 109, 110, 114, 117, 120, 121, 123, 127, 129, 138, 139, 142, 146, 147, 151, 156, 157, 158, 162, 165, 168, 170, 172, 179, 182, 184, 189, 191, 194, 200, 202, 205, 209, 212, 216, 218, 225, 228, 235, 236, 238, 239, 244, 245, 251, 252, 259, 265, 266, 267, 271, 275, 278, 282, 284, 286, 290, 291, 292, 296, 301, 303, 305, 315, 316, 317, 319, 326, 333, 336, 338, 339, 345, 350, 351, 358, 360, 364, 366, 368, 374, 383, 388, 389, 393, 397, 402, 404, 408, 414, 416, 421, 433, 442, 448, 459, 465, 476, 481, 487, 499, 503, 506, 518, 526, 534, 544, 548, 554, 558, 564];
-
-// --- VARIABEL GLOBAL ---
+const clinicalScales = {
+    Sc1: { name: '1 (Hs)', description: 'Hypochondriasis: Perhatian berlebih pada fungsi tubuh dan keluhan fisik.', items: {23:'YA', 29:'YA', 34:'YA', 44:'YA', 72:'YA', 108:'YA', 125:'YA', 161:'YA', 189:'YA', 243:'YA'} },
+    Sc2: { name: '2 (D)', description: 'Depression: Kesedihan, pesimisme, kehilangan minat, dan perasaan tidak berharga.', items: {16:'YA', 76:'YA', 84:'YA', 142:'YA', 236:'YA', 301:'YA', 339:'YA', 411:'YA', 418:'YA', 487:'YA', 526:'YA'} },
+    Sc3: { name: '3 (Hy)', description: 'Hysteria: Penyangkalan masalah dan keluhan fisik spesifik saat stres.', items: {10:'YA', 22:'YA', 158:'YA', 246:'YA', 332:'YA', 405:'TIDAK', 408:'TIDAK', 523:'YA', 539:'TIDAK'} },
+    Sc4: { name: '4 (Pd)', description: 'Psychopathic Deviate: Konflik dengan otoritas, anti-sosial, dan impulsif.', items: {28:'YA', 38:'YA', 56:'YA', 97:'YA', 109:'YA', 118:'YA', 145:'YA', 205:'YA', 313:'YA', 417:'YA', 438:'YA'} },
+    Sc5: { name: '5 (Mf)', description: 'Interests: Pola minat maskulin/feminin (simulasi sederhana).', items: {1:'TIDAK', 4:'YA', 25:'YA', 74:'YA', 81:'YA', 92:'YA', 378:'YA', 423:'TIDAK', 435:'YA', 537:'YA'} },
+    Sc6: { name: '6 (Pa)', description: 'Paranoia: Kecurigaan, rasa permusuhan, dan merasa disalahpahami.', items: {35:'YA', 121:'YA', 123:'YA', 136:'YA', 151:'YA', 200:'YA', 244:'YA', 284:'YA', 364:'YA', 404:'YA'} },
+    Sc7: { name: '7 (Pt)', description: 'Psychasthenia: Kecemasan, keraguan, obsesi, dan ketakutan.', items: {32:'YA', 100:'YA', 147:'TIDAK', 337:'YA', 343:'YA', 346:'YA', 351:'YA', 402:'YA', 431:'YA', 499:'YA', 542:'YA'} },
+    Sc8: { name: '8 (Sc)', description: 'Schizophrenia: Pikiran aneh, isolasi sosial, dan persepsi tidak wajar.', items: {27:'YA', 50:'YA', 66:'YA', 184:'YA', 251:'YA', 291:'YA', 334:'YA', 345:'YA', 350:'YA', 433:'YA', 554:'YA'} },
+    Sc9: { name: '9 (Ma)', description: 'Hypomania: Energi berlebih, euforia/iritabilitas, dan impulsivitas.', items: {134:'YA', 234:'YA', 248:'YA', 268:'YA', 272:'YA', 409:'YA', 415:'YA', 505:'YA'} },
+    Sc0: { name: '0 (Si)', description: 'Social Introversion: Rasa malu, canggung, dan menghindari interaksi sosial.', items: {52:'YA', 180:'YA', 305:'YA', 366:'YA', 377:'YA', 449:'TIDAK', 473:'YA', 552:'YA'} }
+};
+// --- VARIABEL GLOBAL & REFERENSI DOM ---
 let allQuestions = [];
 let testQuestions = [];
 let currentQuestionIndex = 0;
 let deviationScore = 0;
 let validityScores = { L: 0, F: 0, K: 0 };
+let clinicalScores = { Sc1: 0, Sc2: 0, Sc3: 0, Sc4: 0, Sc5: 0, Sc6: 0, Sc7: 0, Sc8: 0, Sc9: 0, Sc0: 0 };
 let userName = '';
 let timerInterval;
-
-// --- REFERENSI ELEMEN DOM ---
 const welcomeContainer = document.getElementById('welcome-container');
 const optionsContainer = document.getElementById('options-container');
 const testContainer = document.getElementById('test-container');
@@ -144,6 +170,8 @@ const validityAnalysisEl = document.getElementById('validity-analysis');
 const personalityAnalysisEl = document.getElementById('personality-analysis');
 const scoreSummaryEl = document.getElementById('score-summary');
 const analysisResultEl = document.getElementById('analysis-result');
+const clinicalScalesContainer = document.getElementById('clinical-scales-container');
+const clinicalScalesAnalysisEl = document.getElementById('clinical-scales-analysis');
 
 // --- EVENT LISTENERS & LOGIKA ALUR APLIKASI ---
 nameInput.addEventListener('input', () => {
@@ -155,36 +183,65 @@ continueBtn.addEventListener('click', () => {
     userNameDisplay.textContent = userName;
     welcomeContainer.style.display = 'none';
     optionsContainer.style.display = 'block';
-    loadQuestions();
 });
 
-async function loadQuestions() {
-    try {
-        const response = await fetch('data_keswa.csv');
-        if (!response.ok) {
-            throw new Error(`Gagal memuat file: Status ${response.status}`);
-        }
-        const csvText = await response.text();
-        allQuestions = parseCSV(csvText);
-        if (allQuestions.length < 565) {
-            throw new Error("File CSV tidak lengkap. Harap gunakan file dengan 565 soal.");
-        }
-        loadingStatus.textContent = `Soal berhasil dimuat (${allQuestions.length} item).`;
-        loadingStatus.style.color = 'green';
-        testOptionsButtons.forEach(btn => btn.disabled = false);
-    } catch (error) {
-        console.error('Error loading questions:', error);
-        loadingStatus.textContent = `Gagal memuat soal. Pastikan file 'data_keswa.csv' ada di folder yang sama. Error: ${error.message}`;
-        loadingStatus.style.color = 'red';
+function selectTestQuestions(length) {
+    if (length === 565) {
+        testQuestions = [...allQuestions];
+    } else if (length === 120) {
+        testQuestions = selected120Indices.map(index => allQuestions.find(q => q.number === index)).filter(q => q);
+    } else if (length === 50) {
+        testQuestions = allQuestions.slice(0, 50);
     }
+}
+
+function startTest(length) {
+    // Memuat soal dari file CSV terpisah
+    fetch('data_keswa.csv')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Gagal memuat file CSV. Pastikan file ada di folder yang sama.');
+            }
+            return response.text();
+        })
+        .then(csvText => {
+            allQuestions = parseCSV(csvText);
+            if (allQuestions.length < 565) {
+                alert("File CSV tidak lengkap atau formatnya salah.");
+                return;
+            }
+
+            selectTestQuestions(length);
+            let durationMinutes;
+            if (length === 565) durationMinutes = 90;
+            else if (length === 120) durationMinutes = 40;
+            else durationMinutes = 15;
+
+            optionsContainer.style.display = 'none';
+            testContainer.style.display = 'block';
+            
+            currentQuestionIndex = 0;
+            deviationScore = 0;
+            validityScores = { L: 0, F: 0, K: 0 };
+            clinicalScores = { Sc1: 0, Sc2: 0, Sc3: 0, Sc4: 0, Sc5: 0, Sc6: 0, Sc7: 0, Sc8: 0, Sc9: 0, Sc0: 0 };
+            
+            startTimer(durationMinutes);
+            showQuestion();
+        })
+        .catch(error => {
+            alert(error.message);
+            console.error(error);
+        });
 }
 
 function parseCSV(text) {
     const lines = text.trim().split(/\r?\n/);
     const data = [];
+    // Mulai dari 1 untuk lewati header
     for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (line) {
+            // Regex untuk menangani koma di dalam kutip
             const parts = line.match(/(?:"[^"]*"|[^,]+)/g);
             if(parts && parts.length === 3) {
                 const number = parseInt(parts[0]);
@@ -195,34 +252,6 @@ function parseCSV(text) {
         }
     }
     return data;
-}
-
-function selectTestQuestions(length) {
-    if (length === 565) {
-        testQuestions = [...allQuestions];
-    } else if (length === 120) {
-        testQuestions = selected120Indices.map(index => allQuestions[index - 1]).filter(q => q);
-    } else if (length === 50) {
-        testQuestions = allQuestions.slice(0, 50);
-    }
-}
-
-function startTest(length) {
-    selectTestQuestions(length);
-    let durationMinutes;
-    if (length === 565) durationMinutes = 90;
-    else if (length === 120) durationMinutes = 40;
-    else durationMinutes = 15;
-
-    optionsContainer.style.display = 'none';
-    testContainer.style.display = 'block';
-    
-    currentQuestionIndex = 0;
-    deviationScore = 0;
-    validityScores = { L: 0, F: 0, K: 0 };
-    
-    startTimer(durationMinutes);
-    showQuestion();
 }
 
 function startTimer(minutes) {
@@ -257,6 +286,7 @@ function selectAnswer(userChoice) {
     const currentQuestion = testQuestions[currentQuestionIndex];
     if (userChoice !== currentQuestion.key) deviationScore++;
     checkValidity(currentQuestion.number, userChoice);
+    checkClinical(currentQuestion.number, userChoice);
 
     currentQuestionIndex++;
     if (currentQuestionIndex < testQuestions.length) {
@@ -271,6 +301,14 @@ function checkValidity(number, choice) {
     if (validityScales.L[number] === choice) validityScores.L++;
     if (validityScales.F[number] === choice) validityScores.F++;
     if (validityScales.K[number] === choice) validityScores.K++;
+}
+
+function checkClinical(number, choice) {
+    for (const scaleKey in clinicalScales) {
+        if (clinicalScales[scaleKey].items[number] === choice) {
+            clinicalScores[scaleKey]++;
+        }
+    }
 }
 
 function showResults() {
@@ -289,10 +327,14 @@ function showResults() {
 
     if (validityResult.isValid) {
         personalityAnalysisEl.style.display = 'block';
-        scoreSummaryEl.innerHTML = `&bull; Skor Deviasi: <strong>${deviationScore}</strong> (${personalityResult.percentage}%)`;
+        scoreSummaryEl.innerHTML = `&bull; Skor Deviasi Umum: <strong>${deviationScore}</strong> (${personalityResult.percentage}%)`;
         analysisResultEl.innerHTML = personalityResult.analysisHTML;
+
+        clinicalScalesContainer.style.display = 'block';
+        clinicalScalesAnalysisEl.innerHTML = getClinicalAnalysisHTML();
     } else {
         personalityAnalysisEl.style.display = 'none';
+        clinicalScalesContainer.style.display = 'none';
     }
 }
 
@@ -302,7 +344,7 @@ function getValidityAnalysis() {
     
     if (F >= 7) {
         isValid = false; status = "Tidak Valid (Faking Bad / Random)";
-        analysisHTML = `<div class="validity-block validity-invalid"><h4>${status}</h4><p>Skor F (${F}) sangat tinggi, menunjukkan pola jawaban tidak wajar, acak, atau sengaja memburuk-burukkan diri. <strong>Profil tidak dapat diinterpretasikan.</strong></p></div>`;
+        analysisHTML = `<div class="validity-block validity-invalid"><h4>${status}</h4><p>Skor F (${F}) sangat tinggi, menunjukkan pola jawaban tidak wajar atau sengaja memburuk-burukkan diri. <strong>Profil tidak dapat diinterpretasikan.</strong></p></div>`;
     } else if (L >= 7) {
         isValid = false; status = "Tidak Valid (Faking Good / Naive)";
         analysisHTML = `<div class="validity-block validity-invalid"><h4>${status}</h4><p>Skor L (${L}) sangat tinggi, menunjukkan usaha menampilkan citra diri sempurna secara tidak wajar. <strong>Profil tidak dapat diinterpretasikan.</strong></p></div>`;
@@ -336,6 +378,40 @@ function getMMPIAnalysis(score, total) {
         analysisHTML = `<div class="analysis-block profile-not-recommended"><h4>${category}</h4><p>Indikasi kuat adanya psikopatologi. Merupakan kontra-indikasi untuk diterima dalam seleksi.</p></div>`;
     }
     return { category, percentage, analysisHTML };
+}
+
+function getClinicalAnalysisHTML() {
+    let tableHTML = `<table id="clinical-scales-table">
+                        <tr><th>Skala</th><th>Deskripsi</th><th>Skor Anda</th><th>Interpretasi</th></tr>`;
+    
+    for (const scaleKey in clinicalScales) {
+        const scale = clinicalScales[scaleKey];
+        const score = clinicalScores[scaleKey];
+        let interpretation = '';
+        let scoreClass = 'score-low';
+        const highThreshold = Math.ceil(Object.keys(scale.items).length * 0.6); // >60%
+        const moderateThreshold = Math.ceil(Object.keys(scale.items).length * 0.3); // >30%
+
+        if (score >= highThreshold) {
+            interpretation = 'Tinggi';
+            scoreClass = 'score-high';
+        } else if (score >= moderateThreshold) {
+            interpretation = 'Moderat';
+            scoreClass = 'score-moderate';
+        } else {
+            interpretation = 'Rendah';
+        }
+
+        tableHTML += `<tr>
+                        <td><strong>${scale.name}</strong></td>
+                        <td>${scale.description}</td>
+                        <td>${score}</td>
+                        <td class="score-interpretation ${scoreClass}">${interpretation}</td>
+                      </tr>`;
+    }
+
+    tableHTML += `</table>`;
+    return tableHTML;
 }
 
 function getFinalVerdict(validity, personality) {
