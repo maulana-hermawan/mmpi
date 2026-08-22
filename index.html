@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Tes KESWA - Evaluasi MMPI-2</title>
+    <title>Aplikasi Tes KESWA TNI/POLRI - Evaluasi MMPI-2</title>
     <style>
         :root {
             --primary: #1e3a8a;
@@ -369,6 +369,9 @@
                 <div class="verdict-sub" id="verdict-desc">Profil Kesehatan Jiwa Stabil & Memenuhi Kriteria Kedinasan</div>
             </div>
 
+            <!-- Version Disclaimer & Method Info -->
+            <div id="version-disclaimer-box" style="margin-bottom: 20px;"></div>
+
             <!-- Validity Scale -->
             <h3 style="margin-top: 24px; margin-bottom: 10px;">1. Analisis Skala Validitas (Kejujuran & Sikap Tes)</h3>
             <table class="table-custom">
@@ -390,8 +393,8 @@
             <div class="chart-container" id="profile-chart-container">
                 <!-- SVG injected via JS -->
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
-                Garis Putus-Putus Merah: <strong>Ambang Batas Patologis / TMS (T = 65)</strong> | Garis Abu-abu: <strong>Mean Normal (T = 50)</strong>
+            <div id="chart-caption" style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+                Garis Putus-Putus Merah: <strong>Ambang Batas Patologis / TMS</strong> | Garis Abu-abu: <strong>Mean Normal (T = 50)</strong>
             </div>
 
             <!-- 10 Clinical Scales Table -->
@@ -817,11 +820,84 @@ function checkForSavedSession() {
 }
 
 // ==========================================
+// 8a. KONFIGURASI PENILAIAN PER VERSI TES
+// ==========================================
+// Referensi: MMPI-2 Manual (Butcher et al., 2001); standar T-Score klinis internasional
+// T >= 65 = signifikansi klinis (standar resmi MMPI-2 penuh & versi 250)
+// Versi lebih pendek -> reliabilitas item lebih rendah -> threshold lebih toleran
+function getScoringConfig(testLength) {
+    if (testLength === 567) {
+        return {
+            clinicalCutoff: 65,
+            borderlineCutoff: 60,
+            criticalScalesForTMS: 1,
+            generalScalesForTMS: 2,
+            tFCutoff: 75,
+            tLCutoff: 70,
+            tKHighCutoff: 70,
+            label: 'Standar Resmi MMPI-2',
+            disclaimerStyle: 'background:#f0fdf4; color:#166534; border-color:#bbf7d0; border-left: 4px solid #059669;',
+            disclaimerIcon: '✅',
+            disclaimerText: 'Standar Instrumen Resmi MMPI-2 — Skor klinis paling akurat dan komprehensif. Hasil ini dapat digunakan sebagai dasar penilaian KESWA definitif.',
+            verdictSuffix: ''
+        };
+    } else if (testLength === 250) {
+        return {
+            clinicalCutoff: 65,
+            borderlineCutoff: 60,
+            criticalScalesForTMS: 1,
+            generalScalesForTMS: 2,
+            tFCutoff: 75,
+            tLCutoff: 70,
+            tKHighCutoff: 70,
+            label: 'Standar KESWA Rekomendasi',
+            disclaimerStyle: 'background:#f0fdf4; color:#166534; border-color:#bbf7d0; border-left: 4px solid #059669;',
+            disclaimerIcon: '✅',
+            disclaimerText: 'Evaluasi Standar KESWA TNI/POLRI — Skor representatif dan reliabel. Profil mencakup seluruh skala validitas dan 10 skala klinis secara berimbang.',
+            verdictSuffix: ''
+        };
+    } else if (testLength === 120) {
+        return {
+            clinicalCutoff: 68,
+            borderlineCutoff: 62,
+            criticalScalesForTMS: 1,
+            generalScalesForTMS: 2,
+            tFCutoff: 75,
+            tLCutoff: 70,
+            tKHighCutoff: 70,
+            label: 'Evaluasi Terpilih (Representatif)',
+            disclaimerStyle: 'background:#eff6ff; color:#1e40af; border-color:#bfdbfe; border-left: 4px solid #3b82f6;',
+            disclaimerIcon: '🔵',
+            disclaimerText: 'Hasil ini merupakan EVALUASI REPRESENTATIF AWAL berdasarkan 120 butir soal terpilih. Untuk keputusan KESWA definitif, disarankan melanjutkan ke Versi Menengah (250 soal) atau Versi Penuh (567 soal).',
+            verdictSuffix: ' — Evaluasi Awal'
+        };
+    } else {
+        return {
+            clinicalCutoff: 70,
+            borderlineCutoff: 65,
+            criticalScalesForTMS: 2,
+            generalScalesForTMS: 4,
+            tFCutoff: 78,
+            tLCutoff: 73,
+            tKHighCutoff: 72,
+            label: 'Skrining Awal',
+            disclaimerStyle: 'background:#fef3c7; color:#92400e; border-color:#fde68a; border-left: 4px solid #d97706;',
+            disclaimerIcon: '⚠️',
+            disclaimerText: 'Hasil ini hanya merupakan SKRINING AWAL — bukan penilaian KESWA definitif. Jumlah item per skala sangat terbatas (2–4 butir) sehingga reliabilitas skor rendah. Wajib dikonfirmasi dengan Versi 250 atau Versi Penuh (567 soal).',
+            verdictSuffix: ' — Skrining Awal'
+        };
+    }
+}
+
+// ==========================================
 // 8. SCORING & ANALISIS KESWA MMPI STANDAR
 // ==========================================
 function calculateAndShowResults() {
     clearInterval(timerInterval);
     clearActiveSession();
+
+    // Ambil konfigurasi penilaian sesuai versi tes
+    const scoringCfg = getScoringConfig(currentTestLength);
 
     // 1. Hitung Raw Scores Skala Validitas
     const valScores = { L: 0, F: 0, K: 0 };
@@ -840,33 +916,35 @@ function calculateAndShowResults() {
         }
     }
 
-    // T-Score Validitas
-    const lPct = valMax.L > 0 ? (valScores.L / valMax.L) : 0;
-    const fPct = valMax.F > 0 ? (valScores.F / valMax.F) : 0;
-    const kPct = valMax.K > 0 ? (valScores.K / valMax.K) : 0;
+    // T-Score Validitas (proporsional berbasis item aktif)
+    const calcTScoreVal = (raw, maxItems) => {
+        if (maxItems <= 0) return 50;
+        if (maxItems < 4) {
+            const pct = raw / (maxItems + 0.6);
+            return Math.min(95, Math.max(35, Math.round(35 + pct * 60)));
+        }
+        const pct = raw / maxItems;
+        return Math.min(95, Math.max(35, Math.round(35 + pct * 60)));
+    };
 
-    const tScoreL = Math.round(40 + lPct * 45);
-    const tScoreF = Math.round(40 + fPct * 50);
-    const tScoreK = Math.round(35 + kPct * 40);
+    const tScoreL = calcTScoreVal(valScores.L, valMax.L);
+    const tScoreF = calcTScoreVal(valScores.F, valMax.F);
+    const tScoreK = calcTScoreVal(valScores.K, valMax.K);
 
-    // Evaluasi Validitas Profil
+    // Evaluasi Validitas Profil (threshold per versi)
     let isValidProfile = true;
-    let validityStatusText = 'Profil Valid & Konsisten';
     let validityAlertHTML = '';
 
-    if (tScoreL >= 70 || valScores.L >= Math.ceil(valMax.L * 0.55)) {
+    if (tScoreL >= scoringCfg.tLCutoff) {
         isValidProfile = false;
-        validityStatusText = 'Tidak Valid: Faking Good / Over-Conformity';
-        validityAlertHTML = `<div class="alert-box alert-warning">⚠️ <strong>Skala L Tinggi (T=${tScoreL}):</strong> Peserta terindikasi kuat merekayasa jawaban agar terlihat sempurna tanpa cela (faking good). Profil kepribadian tidak dapat dinilai secara akurat.</div>`;
-    } else if (tScoreF >= 70 || valScores.F >= Math.ceil(valMax.F * 0.45)) {
+        validityAlertHTML = `<div class="alert-box alert-warning">⚠️ <strong>Skala L Tinggi (T=${tScoreL}):</strong> Peserta terindikasi merekayasa jawaban agar terlihat sempurna tanpa cela (<em>faking good</em>). Profil kepribadian tidak dapat dinilai secara akurat.</div>`;
+    } else if (tScoreF >= scoringCfg.tFCutoff) {
         isValidProfile = false;
-        validityStatusText = 'Tidak Valid: Faking Bad / Malingering / Random';
-        validityAlertHTML = `<div class="alert-box alert-warning">⚠️ <strong>Skala F Tinggi (T=${tScoreF}):</strong> Peserta terindikasi melebih-lebihkan gejala atau menjawab secara tidak konsisten/acak. Profil kepribadian tidak valid.</div>`;
-    } else if (tScoreK >= 70) {
-        validityStatusText = 'Valid dengan Catatan: Sangat Defensif';
+        validityAlertHTML = `<div class="alert-box alert-warning">⚠️ <strong>Skala F Tinggi (T=${tScoreF}):</strong> Peserta terindikasi melebih-lebihkan gejala atau menjawab secara tidak konsisten/acak (<em>faking bad / random</em>). Profil kepribadian tidak valid.</div>`;
+    } else if (tScoreK >= scoringCfg.tKHighCutoff) {
         validityAlertHTML = `<div class="alert-box alert-info">ℹ️ <strong>Skala K Meningkat (T=${tScoreK}):</strong> Peserta menunjukkan sikap defensif dalam tes. Skor klinis telah disesuaikan dengan K-Correction.</div>`;
     } else {
-        validityAlertHTML = `<div class="alert-box alert-info" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;">✅ <strong>Profil Valid (L=${valScores.L}, F=${valScores.F}, K=${valScores.K}):</strong> Pola jawaban wajar, spontan, konsisten, dan memenuhi syarat untuk interpretasi psikologis resmi.</div>`;
+        validityAlertHTML = `<div class="alert-box alert-info" style="background:#f0fdf4; color:#166534; border-color:#bbf7d0;">✅ <strong>Profil Valid (L=${valScores.L}, F=${valScores.F}, K=${valScores.K}):</strong> Pola jawaban wajar, spontan, dan konsisten sesuai standar ${scoringCfg.label}.</div>`;
     }
 
     // 2. Hitung Raw & K-Corrected Scores Skala Klinis
@@ -876,7 +954,11 @@ function calculateAndShowResults() {
     const scaleInterpretations = {};
 
     let elevatedScalesCount = 0;
-    let criticalPathology = false;
+    let criticalElevatedCount = 0;
+    const criticalScaleKeys = ['Sc4', 'Sc6', 'Sc7', 'Sc8', 'Sc2'];
+
+    // kPct dibutuhkan untuk K-Correction terkalibrasi
+    const kPct = valMax.K > 0 ? (valScores.K / valMax.K) : 0;
 
     for (const key in clinicalScales) {
         const scale = clinicalScales[key];
@@ -895,31 +977,27 @@ function calculateAndShowResults() {
 
         rawScores[key] = raw;
 
-        // K-Correction
-        const kCorrectionValue = Math.round((scale.kWeight || 0) * (valScores.K * (activeItems / (valMax.K || 1))));
-        const kCorrected = raw + kCorrectionValue;
-        kCorrectedScores[key] = kCorrected;
+        // K-Correction Terkalibrasi (proporsional terhadap beban klinis)
+        const rawRatio = activeItems > 0 ? (raw / activeItems) : 0;
+        const kWeight = scale.kWeight || 0;
+        const kBonusRatio = kWeight * (kPct * 0.20);
+        const combinedRatio = rawRatio + kBonusRatio;
 
-        // T-Score calculation
-        const itemRatio = activeItems > 0 ? (kCorrected / activeItems) : 0;
-        let tVal = Math.round(42 + itemRatio * 46);
-        if (tVal > 95) tVal = 95;
-        if (tVal < 35) tVal = 35;
+        let tVal = Math.min(95, Math.max(35, Math.round(35 + combinedRatio * 60)));
         tScores[key] = tVal;
+        kCorrectedScores[key] = Math.round(raw + kWeight * (valScores.K * (activeItems / (valMax.K || 1))));
 
-        // Status
+        // Klasifikasi status menggunakan cutoff per versi
         let statusBadge = '';
         let interpText = '';
-        if (tVal >= 65) {
-            statusBadge = '<span class="status-badge badge-elevated">Tinggi (Patologis)</span>';
-            interpText = 'Indikasi elevasi klinis signifikan. Potensi hambatan tugas operasional.';
+        if (tVal >= scoringCfg.clinicalCutoff) {
+            statusBadge = `<span class="status-badge badge-elevated">Tinggi (T≥${scoringCfg.clinicalCutoff})</span>`;
+            interpText = 'Indikasi elevasi klinis signifikan sesuai standar versi ini. Potensi hambatan tugas operasional.';
             elevatedScalesCount++;
-            if (['Sc4', 'Sc6', 'Sc7', 'Sc8', 'Sc2'].includes(key)) {
-                criticalPathology = true;
-            }
-        } else if (tVal >= 58) {
+            if (criticalScaleKeys.includes(key)) criticalElevatedCount++;
+        } else if (tVal >= scoringCfg.borderlineCutoff) {
             statusBadge = '<span class="status-badge badge-warning">Waspada (Borderline)</span>';
-            interpText = 'Kecenderungan meningkat, masih dalam batas adaptasi namun butuh perhatian.';
+            interpText = 'Kecenderungan meningkat, masih dalam batas adaptasi namun butuh perhatian lebih lanjut.';
         } else {
             statusBadge = '<span class="status-badge badge-normal">Normal / Stabil</span>';
             interpText = 'Fungsi psikologis adaptif, seimbang, dan terkendali dengan baik.';
@@ -928,33 +1006,38 @@ function calculateAndShowResults() {
         scaleInterpretations[key] = { statusBadge, interpText, tVal };
     }
 
-    // 3. KEPUTUSAN KESWA (MS / TMS)
+    // 3. KEPUTUSAN KESWA (MS / TMS) - Bertingkat Per Versi
     let isMS = false;
-    let verdictTitle = 'MEMENUHI SYARAT (MS)';
-    let verdictDesc = 'Profil Kesehatan Jiwa Memenuhi Standar Seleksi Kedinasan TNI/POLRI';
+    let verdictTitle = '';
+    let verdictDesc = '';
     let verdictClass = 'verdict-ms';
+
+    const isTMSByCritical = criticalElevatedCount >= scoringCfg.criticalScalesForTMS;
+    const isTMSByGeneral  = elevatedScalesCount   >= scoringCfg.generalScalesForTMS;
+    // Elevasi ekstrem tunggal (T≥75 pada skala apapun) → TMS meski hanya satu skala
+    const hasSevereElevation = Object.values(tScores).some(t => t >= 75);
 
     if (!isValidProfile) {
         isMS = false;
-        verdictTitle = 'TIDAK MEMENUHI SYARAT (TMS)';
+        verdictTitle = 'TIDAK MEMENUHI SYARAT (TMS)' + scoringCfg.verdictSuffix;
         verdictDesc = 'Gagal Validitas: Terindikasi manipulasi respon / jawaban tidak valid';
         verdictClass = 'verdict-tms';
-    } else if (criticalPathology || elevatedScalesCount >= 2) {
+    } else if (isTMSByCritical || isTMSByGeneral || hasSevereElevation) {
         isMS = false;
-        verdictTitle = 'TIDAK MEMENUHI SYARAT (TMS)';
-        verdictDesc = 'Terindikasi Elevasi Klinis Signifikan pada Skala Psikopatologi Utama';
+        verdictTitle = 'TIDAK MEMENUHI SYARAT (TMS)' + scoringCfg.verdictSuffix;
+        verdictDesc = `Terindikasi Elevasi Klinis Signifikan (Cutoff T≥${scoringCfg.clinicalCutoff} — ${scoringCfg.label})`;
         verdictClass = 'verdict-tms';
     } else {
         isMS = true;
-        verdictTitle = 'MEMENUHI SYARAT (MS)';
-        verdictDesc = 'Stabilitas Emosi Baik, Integritas Mental Teruji, dan Siap Melaksanakan Tugas';
+        verdictTitle = 'MEMENUHI SYARAT (MS)' + scoringCfg.verdictSuffix;
+        verdictDesc = `Stabilitas Emosi Baik, Integritas Mental Teruji — ${scoringCfg.label}`;
         verdictClass = 'verdict-ms';
     }
 
     // 4. Render Hasil ke DOM
     document.getElementById('res-name').textContent = currentCandidate.name;
     document.getElementById('res-age-gender').textContent = `${currentCandidate.age} Thn / ${currentCandidate.gender === 'L' ? 'Laki-laki' : 'Perempuan'}`;
-    document.getElementById('res-version').textContent = `Versi ${currentTestLength} Soal (${Object.keys(userAnswers).length} Terjawab)`;
+    document.getElementById('res-version').textContent = `Versi ${currentTestLength} Soal (${Object.keys(userAnswers).length} Terjawab) — ${scoringCfg.label}`;
     document.getElementById('res-date').textContent = new Date().toLocaleString('id-ID');
     document.getElementById('sig-candidate-name').textContent = currentCandidate.name;
 
@@ -963,6 +1046,12 @@ function calculateAndShowResults() {
     document.getElementById('verdict-status').textContent = verdictTitle;
     document.getElementById('verdict-desc').textContent = verdictDesc;
 
+    // Disclaimer Box (berbeda per versi)
+    const disclaimerBox = document.getElementById('version-disclaimer-box');
+    if (disclaimerBox) {
+        disclaimerBox.innerHTML = `<div class="alert-box" style="${scoringCfg.disclaimerStyle}">${scoringCfg.disclaimerIcon} <strong>Standar Penilaian (${scoringCfg.label}):</strong> ${scoringCfg.disclaimerText}</div>`;
+    }
+
     // Validity Table
     const valTableBody = document.getElementById('validity-table-body');
     valTableBody.innerHTML = `
@@ -970,22 +1059,22 @@ function calculateAndShowResults() {
             <td><strong>L (Lie)</strong></td>
             <td>${valScores.L} / ${valMax.L}</td>
             <td><strong>${tScoreL}</strong></td>
-            <td>${tScoreL >= 70 ? '<span class="status-badge badge-invalid">Faking Good</span>' : '<span class="status-badge badge-valid">Wajar</span>'}</td>
-            <td>Kejujuran mengakui kekurangan diri & integritas moral.</td>
+            <td>${tScoreL >= scoringCfg.tLCutoff ? '<span class="status-badge badge-invalid">Faking Good</span>' : '<span class="status-badge badge-valid">Wajar</span>'}</td>
+            <td>Kejujuran mengakui kekurangan diri & integritas moral. (Cutoff T≥${scoringCfg.tLCutoff})</td>
         </tr>
         <tr>
             <td><strong>F (Infrequency)</strong></td>
             <td>${valScores.F} / ${valMax.F}</td>
             <td><strong>${tScoreF}</strong></td>
-            <td>${tScoreF >= 70 ? '<span class="status-badge badge-invalid">Faking Bad</span>' : '<span class="status-badge badge-valid">Valid</span>'}</td>
-            <td>Konsistensi respon & persepsi realitas wajar.</td>
+            <td>${tScoreF >= scoringCfg.tFCutoff ? '<span class="status-badge badge-invalid">Faking Bad</span>' : '<span class="status-badge badge-valid">Valid</span>'}</td>
+            <td>Konsistensi respon & persepsi realitas wajar. (Cutoff T≥${scoringCfg.tFCutoff})</td>
         </tr>
         <tr>
             <td><strong>K (Correction)</strong></td>
             <td>${valScores.K} / ${valMax.K}</td>
             <td><strong>${tScoreK}</strong></td>
-            <td>${tScoreK >= 70 ? '<span class="status-badge badge-warning">Defensif</span>' : '<span class="status-badge badge-valid">Terbuka</span>'}</td>
-            <td>Keterbukaan psikologis terhadap evaluasi kepribadian.</td>
+            <td>${tScoreK >= scoringCfg.tKHighCutoff ? '<span class="status-badge badge-warning">Defensif</span>' : '<span class="status-badge badge-valid">Terbuka</span>'}</td>
+            <td>Keterbukaan psikologis terhadap evaluasi kepribadian. (Cutoff T≥${scoringCfg.tKHighCutoff})</td>
         </tr>
     `;
     document.getElementById('validity-alert-box').innerHTML = validityAlertHTML;
@@ -1001,7 +1090,7 @@ function calculateAndShowResults() {
                 <td><strong>${sc.code}</strong><br><small style="color:var(--text-muted);">${sc.name}</small></td>
                 <td>${rawScores[key]}</td>
                 <td>${kCorrectedScores[key]}</td>
-                <td><strong style="font-size:1.05rem; color:${interp.tVal>=65?'var(--danger)':'var(--primary-dark)'};">${interp.tVal}</strong></td>
+                <td><strong style="font-size:1.05rem; color:${interp.tVal>=scoringCfg.clinicalCutoff?'var(--danger)':'var(--primary-dark)'};">${interp.tVal}</strong></td>
                 <td>${interp.statusBadge}</td>
                 <td>${sc.desc}<br><small style="color:#475569;"><em>${interp.interpText}</em></small></td>
             </tr>
@@ -1009,7 +1098,7 @@ function calculateAndShowResults() {
     }
     clinTableBody.innerHTML = clinRows;
 
-    renderMMPIProfileSVG(tScoreL, tScoreF, tScoreK, tScores);
+    renderMMPIProfileSVG(tScoreL, tScoreF, tScoreK, tScores, scoringCfg.clinicalCutoff);
     renderDimensions(tScores, isMS);
 
     saveResultToHistory({
@@ -1034,7 +1123,7 @@ function calculateAndShowResults() {
 // ==========================================
 // 9. VISUALISASI SVG PROFIL MMPI
 // ==========================================
-function renderMMPIProfileSVG(tL, tF, tK, tClin) {
+function renderMMPIProfileSVG(tL, tF, tK, tClin, clinicalCutoff = 65) {
     const container = document.getElementById('profile-chart-container');
     const width = 800;
     const height = 320;
@@ -1065,7 +1154,7 @@ function renderMMPIProfileSVG(tL, tF, tK, tClin) {
     const getX = (idx) => padX + (idx / (scales.length - 1)) * chartW;
 
     const y50 = getY(50);
-    const y65 = getY(65);
+    const yCut = getY(clinicalCutoff);
     const y80 = getY(80);
 
     let pointsPathVal = '';
@@ -1086,8 +1175,8 @@ function renderMMPIProfileSVG(tL, tF, tK, tClin) {
             <rect x="${padX}" y="${padY}" width="${chartW}" height="${chartH}" fill="#f8fafc" stroke="#cbd5e1" />
             <line x1="${padX}" y1="${y50}" x2="${padX + chartW}" y2="${y50}" stroke="#94a3b8" stroke-dasharray="4" stroke-width="1.5" />
             <text x="${padX - 8}" y="${y50 + 4}" font-size="11" fill="#64748b" text-anchor="end">T=50</text>
-            <line x1="${padX}" y1="${y65}" x2="${padX + chartW}" y2="${y65}" stroke="#dc2626" stroke-dasharray="5" stroke-width="2" />
-            <text x="${padX - 8}" y="${y65 + 4}" font-size="11" font-weight="bold" fill="#dc2626" text-anchor="end">T=65 (Cutoff)</text>
+            <line x1="${padX}" y1="${yCut}" x2="${padX + chartW}" y2="${yCut}" stroke="#dc2626" stroke-dasharray="5" stroke-width="2" />
+            <text x="${padX - 8}" y="${yCut + 4}" font-size="11" font-weight="bold" fill="#dc2626" text-anchor="end">T=${clinicalCutoff} (Cutoff)</text>
             <line x1="${padX}" y1="${y80}" x2="${padX + chartW}" y2="${y80}" stroke="#cbd5e1" stroke-dasharray="2" stroke-width="1" />
             <text x="${padX - 8}" y="${y80 + 4}" font-size="11" fill="#94a3b8" text-anchor="end">T=80</text>
             <path d="${pointsPathVal}" fill="none" stroke="#2563eb" stroke-width="3" />
@@ -1097,7 +1186,7 @@ function renderMMPIProfileSVG(tL, tF, tK, tClin) {
     scales.forEach((s, idx) => {
         const x = getX(idx);
         const y = getY(s.val);
-        const color = s.val >= 65 ? '#dc2626' : (s.type === 'val' ? '#2563eb' : '#059669');
+        const color = s.val >= clinicalCutoff ? '#dc2626' : (s.type === 'val' ? '#2563eb' : '#059669');
 
         svgHTML += `
             <circle cx="${x}" cy="${y}" r="6" fill="${color}" stroke="#fff" stroke-width="2" />
@@ -1108,6 +1197,11 @@ function renderMMPIProfileSVG(tL, tF, tK, tClin) {
 
     svgHTML += `</svg>`;
     container.innerHTML = svgHTML;
+
+    const captionEl = document.getElementById('chart-caption');
+    if (captionEl) {
+        captionEl.innerHTML = `Garis Putus-Putus Merah: <strong>Ambang Batas Patologis / TMS (T = ${clinicalCutoff})</strong> | Garis Abu-abu: <strong>Mean Normal (T = 50)</strong>`;
+    }
 }
 
 // ==========================================
@@ -1202,122 +1296,8 @@ function viewHistoryItem(idx) {
 
         currentCandidate = item.candidate;
         currentTestLength = item.version;
+        const scoringCfg = getScoringConfig(item.version);
 
         document.getElementById('res-name').textContent = item.candidate.name;
         document.getElementById('res-age-gender').textContent = `${item.candidate.age} Thn / ${item.candidate.gender === 'L' ? 'Laki-laki' : 'Perempuan'}`;
-        document.getElementById('res-version').textContent = `Versi ${item.version} Soal (Arsip)`;
-        document.getElementById('res-date').textContent = item.date;
-        document.getElementById('sig-candidate-name').textContent = item.candidate.name;
-
-        const verdictBanner = document.getElementById('verdict-banner');
-        verdictBanner.className = `verdict-banner ${item.verdict === 'MS' ? 'verdict-ms' : 'verdict-tms'}`;
-        document.getElementById('verdict-status').textContent = item.verdictTitle || (item.verdict === 'MS' ? 'MEMENUHI SYARAT (MS)' : 'TIDAK MEMENUHI SYARAT (TMS)');
-        document.getElementById('verdict-desc').textContent = item.verdictDesc || '';
-
-        // Validity Table
-        const valTableBody = document.getElementById('validity-table-body');
-        valTableBody.innerHTML = `
-            <tr>
-                <td><strong>L (Lie)</strong></td>
-                <td>${item.scores.L}</td>
-                <td><strong>${item.scores.tScoreL || 50}</strong></td>
-                <td>${(item.scores.tScoreL || 50) >= 70 ? '<span class="status-badge badge-invalid">Faking Good</span>' : '<span class="status-badge badge-valid">Wajar</span>'}</td>
-                <td>Kejujuran mengakui kekurangan diri & integritas moral.</td>
-            </tr>
-            <tr>
-                <td><strong>F (Infrequency)</strong></td>
-                <td>${item.scores.F}</td>
-                <td><strong>${item.scores.tScoreF || 50}</strong></td>
-                <td>${(item.scores.tScoreF || 50) >= 70 ? '<span class="status-badge badge-invalid">Faking Bad</span>' : '<span class="status-badge badge-valid">Valid</span>'}</td>
-                <td>Konsistensi respon & persepsi realitas wajar.</td>
-            </tr>
-            <tr>
-                <td><strong>K (Correction)</strong></td>
-                <td>${item.scores.K}</td>
-                <td><strong>${item.scores.tScoreK || 50}</strong></td>
-                <td>${(item.scores.tScoreK || 50) >= 70 ? '<span class="status-badge badge-warning">Defensif</span>' : '<span class="status-badge badge-valid">Terbuka</span>'}</td>
-                <td>Keterbukaan psikologis terhadap evaluasi kepribadian.</td>
-            </tr>
-        `;
-        document.getElementById('validity-alert-box').innerHTML = '';
-
-        // Clinical Table
-        const clinTableBody = document.getElementById('clinical-table-body');
-        let clinRows = '';
-        const tClin = item.scores.clinical || {};
-        for (const key in clinicalScales) {
-            const sc = clinicalScales[key];
-            const tVal = tClin[key] || 50;
-            const badge = tVal >= 65 ? '<span class="status-badge badge-elevated">Tinggi</span>' : '<span class="status-badge badge-normal">Normal</span>';
-            clinRows += `
-                <tr>
-                    <td><strong>${sc.code}</strong><br><small style="color:var(--text-muted);">${sc.name}</small></td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td><strong style="font-size:1.05rem; color:${tVal>=65?'var(--danger)':'var(--primary-dark)'};">${tVal}</strong></td>
-                    <td>${badge}</td>
-                    <td>${sc.desc}</td>
-                </tr>
-            `;
-        }
-        clinTableBody.innerHTML = clinRows;
-
-        renderMMPIProfileSVG(item.scores.tScoreL || 50, item.scores.tScoreF || 50, item.scores.tScoreK || 50, tClin);
-        renderDimensions(tClin, item.verdict === 'MS');
-
-        hideAllViews();
-        document.getElementById('result-view').style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch(e) {}
-}
-
-function deleteHistoryItem(idx) {
-    if (confirm('Hapus data riwayat tes ini?')) {
-        let history = JSON.parse(localStorage.getItem('keswa_test_history') || '[]');
-        history.splice(idx, 1);
-        localStorage.setItem('keswa_test_history', JSON.stringify(history));
-        renderHistoryTable();
-    }
-}
-
-function clearAllHistory() {
-    if (confirm('Yakin ingin menghapus SELURUH riwayat tes dari perangkat ini?')) {
-        localStorage.removeItem('keswa_test_history');
-        renderHistoryTable();
-    }
-}
-
-function exportHistoryCSV() {
-    let history = [];
-    try {
-        history = JSON.parse(localStorage.getItem('keswa_test_history') || '[]');
-    } catch(e) {}
-
-    if (history.length === 0) {
-        alert('Tidak ada data riwayat untuk diexport.');
-        return;
-    }
-
-    let csvContent = "data:text/csv;charset=utf-8,No,Tanggal,Nama,Usia,Gender,Versi_Soal,Skor_L,Skor_F,Skor_K,Status\n";
-    history.forEach((h, idx) => {
-        csvContent += `${idx + 1},"${h.date}","${h.candidate.name}",${h.candidate.age},"${h.candidate.gender}",${h.version},${h.scores.L},${h.scores.F},${h.scores.K},"${h.verdict}"\n`;
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Riwayat_Tes_KESWA_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// ==========================================
-// 12. INISIALISASI
-// ==========================================
-window.addEventListener('DOMContentLoaded', () => {
-    checkForSavedSession();
-});
-</script>
-</body>
-</html>
+        document.getElementById('res-version').textContent = `Versi ${item.version} Soal (Arsip) — ${scorin
