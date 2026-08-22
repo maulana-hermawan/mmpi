@@ -1300,4 +1300,131 @@ function viewHistoryItem(idx) {
 
         document.getElementById('res-name').textContent = item.candidate.name;
         document.getElementById('res-age-gender').textContent = `${item.candidate.age} Thn / ${item.candidate.gender === 'L' ? 'Laki-laki' : 'Perempuan'}`;
-        document.getElementById('res-version').textContent = `Versi ${item.version} Soal (Arsip) — ${scorin
+        document.getElementById('res-version').textContent = `Versi ${item.version} Soal (Arsip) — ${scoringCfg.label}`;
+        document.getElementById('res-date').textContent = item.date;
+        document.getElementById('sig-candidate-name').textContent = item.candidate.name;
+
+        const verdictBanner = document.getElementById('verdict-banner');
+        verdictBanner.className = `verdict-banner ${item.verdict === 'MS' ? 'verdict-ms' : 'verdict-tms'}`;
+        document.getElementById('verdict-status').textContent = item.verdictTitle || (item.verdict === 'MS' ? ('MEMENUHI SYARAT (MS)' + scoringCfg.verdictSuffix) : ('TIDAK MEMENUHI SYARAT (TMS)' + scoringCfg.verdictSuffix));
+        document.getElementById('verdict-desc').textContent = item.verdictDesc || '';
+
+        // Disclaimer Box
+        const disclaimerBox = document.getElementById('version-disclaimer-box');
+        if (disclaimerBox) {
+            disclaimerBox.innerHTML = `<div class="alert-box" style="${scoringCfg.disclaimerStyle}">${scoringCfg.disclaimerIcon} <strong>Standar Penilaian (${scoringCfg.label}):</strong> ${scoringCfg.disclaimerText}</div>`;
+        }
+
+        // Validity Table
+        const valTableBody = document.getElementById('validity-table-body');
+        valTableBody.innerHTML = `
+            <tr>
+                <td><strong>L (Lie)</strong></td>
+                <td>${item.scores.L}</td>
+                <td><strong>${item.scores.tScoreL || 50}</strong></td>
+                <td>${(item.scores.tScoreL || 50) >= scoringCfg.tLCutoff ? '<span class="status-badge badge-invalid">Faking Good</span>' : '<span class="status-badge badge-valid">Wajar</span>'}</td>
+                <td>Kejujuran mengakui kekurangan diri & integritas moral. (Cutoff T≥${scoringCfg.tLCutoff})</td>
+            </tr>
+            <tr>
+                <td><strong>F (Infrequency)</strong></td>
+                <td>${item.scores.F}</td>
+                <td><strong>${item.scores.tScoreF || 50}</strong></td>
+                <td>${(item.scores.tScoreF || 50) >= scoringCfg.tFCutoff ? '<span class="status-badge badge-invalid">Faking Bad</span>' : '<span class="status-badge badge-valid">Valid</span>'}</td>
+                <td>Konsistensi respon & persepsi realitas wajar. (Cutoff T≥${scoringCfg.tFCutoff})</td>
+            </tr>
+            <tr>
+                <td><strong>K (Correction)</strong></td>
+                <td>${item.scores.K}</td>
+                <td><strong>${item.scores.tScoreK || 50}</strong></td>
+                <td>${(item.scores.tScoreK || 50) >= scoringCfg.tKHighCutoff ? '<span class="status-badge badge-warning">Defensif</span>' : '<span class="status-badge badge-valid">Terbuka</span>'}</td>
+                <td>Keterbukaan psikologis terhadap evaluasi kepribadian. (Cutoff T≥${scoringCfg.tKHighCutoff})</td>
+            </tr>
+        `;
+        document.getElementById('validity-alert-box').innerHTML = '';
+
+        // Clinical Table
+        const clinTableBody = document.getElementById('clinical-table-body');
+        let clinRows = '';
+        const tClin = item.scores.clinical || {};
+        for (const key in clinicalScales) {
+            const sc = clinicalScales[key];
+            const tVal = tClin[key] || 50;
+            const badge = tVal >= scoringCfg.clinicalCutoff 
+                ? `<span class="status-badge badge-elevated">Tinggi (T≥${scoringCfg.clinicalCutoff})</span>` 
+                : (tVal >= scoringCfg.borderlineCutoff ? '<span class="status-badge badge-warning">Waspada</span>' : '<span class="status-badge badge-normal">Normal</span>');
+            clinRows += `
+                <tr>
+                    <td><strong>${sc.code}</strong><br><small style="color:var(--text-muted);">${sc.name}</small></td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><strong style="font-size:1.05rem; color:${tVal>=scoringCfg.clinicalCutoff?'var(--danger)':'var(--primary-dark)'};">${tVal}</strong></td>
+                    <td>${badge}</td>
+                    <td>${sc.desc}</td>
+                </tr>
+            `;
+        }
+        clinTableBody.innerHTML = clinRows;
+
+        renderMMPIProfileSVG(item.scores.tScoreL || 50, item.scores.tScoreF || 50, item.scores.tScoreK || 50, tClin, scoringCfg.clinicalCutoff);
+        renderDimensions(tClin, item.verdict === 'MS');
+
+        hideAllViews();
+        document.getElementById('result-view').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {}
+}
+
+function deleteHistoryItem(idx) {
+    if (confirm('Hapus data riwayat tes ini?')) {
+        let history = JSON.parse(localStorage.getItem('keswa_test_history') || '[]');
+        history.splice(idx, 1);
+        localStorage.setItem('keswa_test_history', JSON.stringify(history));
+        renderHistoryTable();
+    }
+}
+
+function clearAllHistory() {
+    if (confirm('Yakin ingin menghapus SELURUH riwayat tes dari perangkat ini?')) {
+        localStorage.removeItem('keswa_test_history');
+        renderHistoryTable();
+    }
+}
+
+function exportHistoryCSV() {
+    let history = [];
+    try {
+        history = JSON.parse(localStorage.getItem('keswa_test_history') || '[]');
+    } catch(e) {}
+
+    if (history.length === 0) {
+        alert('Tidak ada data riwayat untuk diexport.');
+        return;
+    }
+
+    let csvContent = "No,Tanggal,Nama,Usia,Gender,Versi_Soal,Skor_L,Skor_F,Skor_K,Status\n";
+    history.forEach((h, idx) => {
+        csvContent += `${idx + 1},"${h.date}","${h.candidate.name}",${h.candidate.age},"${h.candidate.gender}",${h.version},${h.scores.L},${h.scores.F},${h.scores.K},"${h.verdict}"\n`;
+    });
+
+    // Gunakan Blob agar karakter UTF-8 (nama Indonesia, dll) aman
+    const bom = '﻿'; // BOM agar Excel mengenali UTF-8
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Riwayat_Tes_KESWA_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// ==========================================
+// 12. INISIALISASI
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    checkForSavedSession();
+});
+</script>
+</body>
+</html>
