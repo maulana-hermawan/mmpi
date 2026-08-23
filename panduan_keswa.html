@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Tes KESWA MMPI-2 | TNI/POLRI</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --red:    #c0392b;
+            --navy:   #1a2a4a;
+            --blue:   #2563eb;
+            --gold:   #b8860b;
+            --light:  #f8fafc;
+            --border: #dde3ef;
+            --text:   #1e293b;
+            --muted:  #64748b;
+        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #eef2f7; color: var(--text); line-height: 1.7; font-size: 15px; }
+        .page-header { background: linear-gradient(135deg, var(--navy) 0%, #0f1e3a 100%); color: #fff; padding: 36px 40px 28px; border-bottom: 5px solid var(--red); display: flex; align-items: center; gap: 28px; }
+        .header-emblem { width: 80px; height: 80px; background: rgba(255,255,255,0.12); border-radius: 50%; border: 3px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; font-size: 38px; flex-shrink: 0; }
+        .header-text h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: .5px; }
+        .header-text .sub { font-size: .9rem; opacity: .75; margin-top: 4px; }
+        .header-badges { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 3px 13px; font-size: .75rem; letter-spacing: .4px; }
+        .tab-nav { background: var(--navy); display: flex; overflow-x: auto; border-bottom: 3px solid var(--red); }
+        .tab-btn { padding: 14px 24px; color: rgba(255,255,255,0.65); font-size: .88rem; font-weight: 600; cursor: pointer; border: none; background: transparent; white-space: nowrap; transition: all .2s; border-bottom: 3px solid transparent; margin-bottom: -3px; }
+        .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.07); }
+        .tab-btn.active { color: #fff; border-bottom-color: var(--red); background: rgba(255,255,255,0.1); }
+        .container { max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 28px 32px; margin-bottom: 22px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .card-title { font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 10px; }
+        .steps { counter-reset: step; }
+        .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+        .step-num { counter-increment: step; width: 36px; height: 36px; min-width: 36px; background: var(--navy); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; }
+        .step-num::before { content: counter(step); }
+        .step-body { flex: 1; }
+        .step-body strong { display: block; color: var(--navy); margin-bottom: 4px; }
+        .alert { border-radius: 8px; padding: 14px 18px; margin: 16px 0; display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid; }
+        .alert-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+        .alert.info   { background: #eff6ff; border-color: var(--blue); color: #1e40af; }
+        .alert.warn   { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+        .alert.danger { background: #fef2f2; border-color: var(--red);  color: #991b1b; }
+        .alert.success{ background: #f0fdf4; border-color: #16a34a; color: #14532d; }
+        table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        th { background: var(--navy); color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
+        td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .badge-ms   { background:#dcfce7; color:#15803d; border-radius:12px; padding:2px 10px; font-size:.8rem; font-weight:600; }
+        .badge-tms  { background:#fee2e2; color:#dc2626; border-radius:12px; padding:2px 10px; font-size:.8rem; font-weight:600; }
+        .badge-warn { background:#fef3c7; color:#d97706; border-radius:12px; padding:2px 10px; font-size:.8rem; font-weight:600; }
+        .scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media(max-width:640px){ .scale-grid { grid-template-columns: 1fr; } }
+        .scale-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; background: #f8fafc; }
+        .scale-card.critical { border-left: 4px solid var(--red); }
+        .scale-card.general  { border-left: 4px solid var(--blue); }
+        .scale-card.validity { border-left: 4px solid var(--gold); }
+        .scale-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .scale-name  { font-weight: 700; color: var(--navy); margin: 4px 0 6px; font-size: 1rem; }
+        .scale-desc  { font-size: .87rem; color: #334155; }
+        .do-dont { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media(max-width:600px){ .do-dont { grid-template-columns: 1fr; } }
+        .do-box, .dont-box { border-radius: 10px; padding: 18px 20px; }
+        .do-box   { background: #f0fdf4; border: 1.5px solid #86efac; }
+        .dont-box { background: #fef2f2; border: 1.5px solid #fca5a5; }
+        .do-box h4   { color: #15803d; margin-bottom: 12px; font-size: 1rem; }
+        .dont-box h4 { color: #dc2626; margin-bottom: 12px; font-size: 1rem; }
+        .do-box li, .dont-box li { font-size: .9rem; margin-bottom: 8px; list-style: none; padding-left: 22px; position: relative; }
+        .do-box li::before   { content: '✅'; position: absolute; left: 0; font-size: .85rem; }
+        .dont-box li::before { content: '❌'; position: absolute; left: 0; font-size: .85rem; }
+        .rule-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-num { background: var(--red); color: #fff; width: 28px; height: 28px; min-width: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; }
+        .ver-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        @media(max-width:700px){ .ver-grid { grid-template-columns: repeat(2, 1fr); } }
+        .ver-box { border-radius: 10px; border: 2px solid var(--border); padding: 16px; text-align: center; }
+        .ver-box.featured { border-color: var(--blue); background: #eff6ff; }
+        .ver-num { font-size: 1.8rem; font-weight: 800; color: var(--navy); }
+        .ver-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+        .ver-time { font-size: .85rem; color: var(--blue); margin: 6px 0; }
+        kbd { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; border: 1px solid #94a3b8; font-family: monospace; }
+        @media print {
+            body { background: #fff; font-size: 12px; }
+            .tab-nav { display: none !important; }
+            .section { display: block !important; page-break-after: always; }
+            .page-header { padding: 20px; }
+            .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+        }
+        .page-footer { text-align: center; padding: 24px; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--border); margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <div class="header-emblem">🎖️</div>
+    <div class="header-text">
+        <h1>Panduan Tes Kesehatan Jiwa (KESWA)</h1>
+        <div class="sub">Instrumen MMPI-2 Adaptasi Indonesia &nbsp;|&nbsp; TNI / POLRI</div>
+        <div class="header-badges">
+            <span class="badge">📋 Panduan Resmi</span>
+            <span class="badge">🔐 Rahasia Terbatas</span>
+            <span class="badge">🏛️ Standar Psikometri Internasional</span>
+        </div>
+    </div>
+</div>
+
+<nav class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('pengerjaan',this)">📝 Panduan Pengerjaan</button>
+    <button class="tab-btn" onclick="showTab('penilaian',this)">📊 Panduan Penilaian</button>
+    <button class="tab-btn" onclick="showTab('tips',this)">💡 Tips &amp; Trik</button>
+    <button class="tab-btn" onclick="showTab('aturan',this)">📜 Aturan &amp; Tata Tertib</button>
+</nav>
+
+<div class="container">
+
+<!-- ===== TAB 1: PENGERJAAN ===== -->
+<div id="tab-pengerjaan" class="section active">
+
+    <div class="card">
+        <div class="card-title">📋 Apa Itu Tes KESWA MMPI-2?</div>
+        <p>Tes Kesehatan Jiwa (KESWA) menggunakan instrumen <strong>MMPI-2 (Minnesota Multiphasic Personality Inventory-2)</strong> — alat ukur psikologis standar internasional yang digunakan di lebih dari 40 negara. Tes ini dirancang untuk menilai kestabilan emosi, integritas kepribadian, pola pikir, dan kesiapan mental untuk mengemban tugas negara.</p>
+        <div class="alert info" style="margin-top:14px;">
+            <div class="alert-icon">ℹ️</div>
+            <div><strong>Bukan Tes Inteligensi:</strong> KESWA bukan tes IQ. Tidak ada jawaban "pintar" atau "bodoh". Yang dinilai adalah <em>kejujuran dan konsistensi kepribadian Anda</em>.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🗂️ Versi Tes yang Tersedia</div>
+        <div class="ver-grid">
+            <div class="ver-box">
+                <div class="ver-label">Versi Cepat</div>
+                <div class="ver-num">50</div>
+                <div style="font-size:.8rem;color:var(--muted);">Soal</div>
+                <div class="ver-time">⏱️ ±15 Menit</div>
+                <div style="font-size:.82rem;font-weight:600;color:#d97706;">Skrining Awal</div>
+                <div style="font-size:.78rem;margin-top:6px;color:var(--muted);">Akurasi 81%</div>
+            </div>
+            <div class="ver-box">
+                <div class="ver-label">Versi Terpilih</div>
+                <div class="ver-num">120</div>
+                <div style="font-size:.8rem;color:var(--muted);">Soal</div>
+                <div class="ver-time">⏱️ ±30 Menit</div>
+                <div style="font-size:.82rem;font-weight:600;color:#16a34a;">Evaluasi Awal</div>
+                <div style="font-size:.78rem;margin-top:6px;color:var(--muted);">Akurasi 99.6%</div>
+            </div>
+            <div class="ver-box featured">
+                <div class="ver-label">⭐ Direkomendasikan</div>
+                <div class="ver-num">250</div>
+                <div style="font-size:.8rem;color:var(--muted);">Soal</div>
+                <div class="ver-time">⏱️ ±50 Menit</div>
+                <div style="font-size:.82rem;font-weight:600;color:#2563eb;">Standar KESWA</div>
+                <div style="font-size:.78rem;margin-top:6px;color:var(--muted);">Akurasi 100%</div>
+            </div>
+            <div class="ver-box">
+                <div class="ver-label">Versi Resmi Penuh</div>
+                <div class="ver-num">567</div>
+                <div style="font-size:.8rem;color:var(--muted);">Soal</div>
+                <div class="ver-time">⏱️ ±90 Menit</div>
+                <div style="font-size:.82rem;font-weight:600;color:#7c3aed;">Evaluasi Resmi</div>
+                <div style="font-size:.78rem;margin-top:6px;color:var(--muted);">Akurasi 100%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🚀 Langkah-Langkah Pengerjaan</div>
+        <div class="steps">
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Registrasi Data Diri</strong>Masukkan Nama Lengkap, Usia, dan pilih Jenis Kelamin. Data harus akurat karena akan tercantum pada hasil tes resmi.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Pilih Versi Tes</strong>Pilih jumlah soal sesuai petunjuk penguji. Jika tidak ada instruksi, gunakan <strong>Versi 250 Soal</strong> (direkomendasikan untuk keputusan KESWA).</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Baca Pernyataan Sampai Selesai</strong>Setiap soal berupa pernyataan tentang diri Anda. Baca sampai akhir sebelum menjawab.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Jawab Secara Spontan — Tidak Ada Tombol Kembali</strong>Tekan <strong>YA</strong> jika pernyataan menggambarkan diri Anda. Tekan <strong>TIDAK</strong> jika tidak. Sistem langsung berpindah ke soal berikutnya secara otomatis.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Gunakan Keyboard untuk Lebih Cepat</strong>Tekan angka <kbd>1</kbd> untuk <strong>YA</strong> dan <kbd>2</kbd> untuk <strong>TIDAK</strong>. Lebih cepat 40% dibanding klik mouse.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Selesaikan Semua Soal</strong>Kerjakan hingga soal terakhir. Hasil dihitung otomatis dan ditampilkan setelah soal terakhir terjawab.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Cetak / Simpan Hasil</strong>Gunakan tombol <strong>Cetak / Print</strong> untuk mencetak hasil resmi. Hasil otomatis tersimpan di riwayat lokal.</div></div>
+        </div>
+        <div class="alert warn">
+            <div class="alert-icon">⚠️</div>
+            <div><strong>Sesi Terputus:</strong> Jika browser ditutup atau terjadi gangguan, tes dapat dilanjutkan dari soal terakhir selama tidak lebih dari 24 jam. Buka kembali halaman dan pilih <em>"Lanjutkan Sesi"</em>.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">⌨️ Cara Menjawab</div>
+        <table>
+            <tr><th>Metode</th><th>YA / Setuju</th><th>TIDAK / Tidak Setuju</th></tr>
+            <tr><td>🖱️ Mouse / Layar Sentuh</td><td><span class="badge-ms">Klik Tombol YA</span></td><td><span class="badge-tms">Klik Tombol TIDAK</span></td></tr>
+            <tr><td>⌨️ Keyboard</td><td><kbd>1</kbd> atau <kbd>Y</kbd></td><td><kbd>2</kbd> atau <kbd>T</kbd></td></tr>
+        </table>
+        <div class="alert info" style="margin-top:14px;">
+            <div class="alert-icon">ℹ️</div>
+            <div>Tidak ada pilihan <em>ragu-ragu</em>. Pilih yang paling mendekati kondisi Anda secara umum dalam kehidupan sehari-hari.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TAB 2: PENILAIAN ===== -->
+<div id="tab-penilaian" class="section">
+
+    <div class="card">
+        <div class="card-title">🔬 Sistem Penilaian MMPI-2 (T-Score)</div>
+        <p>Penilaian dilakukan otomatis menggunakan <strong>T-Score (T-Skor)</strong> — skala transformasi standar internasional yang menempatkan skor individu dalam konteks distribusi populasi normal.</p>
+        <div class="alert info" style="margin-top:14px;">
+            <div class="alert-icon">📐</div>
+            <div>
+                <strong>Formula T-Score Terkalibrasi KESWA:</strong><br>
+                <code style="font-size:1.1rem;font-weight:700;">T = 35 + (Rasio Gabungan + Bobot-K) × 60</code><br><br>
+                <table style="font-size:.85rem;">
+                    <tr><th>T-Score</th><th>Interpretasi</th><th>Status</th></tr>
+                    <tr><td>35 – 49</td><td>Di bawah rata-rata (rendah)</td><td>Normal</td></tr>
+                    <tr><td>50 – 64</td><td>Rata-rata normal</td><td>Normal</td></tr>
+                    <tr><td>65 – 74</td><td>Borderline / Perlu perhatian</td><td>Waspada</td></tr>
+                    <tr><td>≥ 75</td><td>Elevasi klinis signifikan</td><td><span class="badge-tms">TMS Otomatis</span></td></tr>
+                    <tr><td>95 (maks)</td><td>Ceiling — skor tertinggi yang mungkin</td><td>TMS</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🛡️ Skala Validitas (3 Skala — Diperiksa Pertama)</div>
+        <div class="scale-grid">
+            <div class="scale-card validity">
+                <div class="scale-label">Skala Validitas L</div>
+                <div class="scale-name">L — Lie (Kebohongan)</div>
+                <div class="scale-desc">Mengukur upaya menampilkan diri lebih sempurna. <strong>T ≥ 70</strong> = Faking Good. Profil dinyatakan tidak valid.</div>
+            </div>
+            <div class="scale-card validity">
+                <div class="scale-label">Skala Validitas F</div>
+                <div class="scale-name">F — Infrequency (Jarang Terjadi)</div>
+                <div class="scale-desc">Mengukur respon tidak wajar/berlebihan. <strong>T ≥ 75</strong> = Faking Bad atau jawaban acak. Profil tidak valid.</div>
+            </div>
+            <div class="scale-card validity" style="grid-column:span 2;">
+                <div class="scale-label">Skala Validitas K</div>
+                <div class="scale-name">K — Defensiveness (Pertahanan Diri)</div>
+                <div class="scale-desc">Mengukur sikap defensif. K digunakan sebagai <strong>faktor koreksi (K-Correction)</strong> pada beberapa skala klinis untuk meningkatkan akurasi pengukuran. K tinggi sendiri tidak langsung TMS.</div>
+            </div>
+        </div>
+        <div class="alert warn" style="margin-top:14px;">
+            <div class="alert-icon">🔄</div>
+            <div><strong>Prinsip Penilaian Validitas:</strong> Jika Skala L atau F melewati batas cutoff → status menjadi <span class="badge-warn">TIDAK VALID — WAJIB TES ULANG (RETES)</span>. Kondisi ini <strong>bukan vonis gugur mutlak</strong>, melainkan indikasi data tes rusak/tidak sah sehingga kandidat direkomendasikan tes ulang setelah pengarahan kejujuran.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🧠 10 Skala Klinis Kepribadian</div>
+        <p style="margin-bottom:14px;"><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:.82rem;font-weight:600;">KRITIS</span> = 1 skala sudah cukup untuk TMS &nbsp;|&nbsp; <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:4px;font-size:.82rem;font-weight:600;">UMUM</span> = butuh 2+ skala untuk TMS (atau T≥75 tunggal)</p>
+        <div class="scale-grid">
+            <div class="scale-card general"><div class="scale-label">Skala Umum — Sc1</div><div class="scale-name">Hs — Hypochondriasis</div><div class="scale-desc">Kekhawatiran berlebihan pada kesehatan fisik, keluhan somatik tanpa dasar medis yang jelas.</div></div>
+            <div class="scale-card critical"><div class="scale-label">Skala Kritis — Sc2</div><div class="scale-name">D — Depression (Depresi)</div><div class="scale-desc">Mood depresif, perasaan tidak berharga, kehilangan semangat hidup dan motivasi bertugas.</div></div>
+            <div class="scale-card general"><div class="scale-label">Skala Umum — Sc3</div><div class="scale-name">Hy — Hysteria (Histeria)</div><div class="scale-desc">Konversi emosi ke gejala fisik, kebutuhan perhatian berlebihan, ketidakmatangan emosional.</div></div>
+            <div class="scale-card critical"><div class="scale-label">Skala Kritis — Sc4</div><div class="scale-name">Pd — Psychopathic Deviate</div><div class="scale-desc">Perilaku antisosial, penolakan otoritas, kecenderungan melanggar disiplin dan aturan.</div></div>
+            <div class="scale-card general"><div class="scale-label">Skala Umum — Sc5</div><div class="scale-name">Mf — Masculinity-Femininity</div><div class="scale-desc">Minat dan pola peran gender. Referensi profil kepribadian, bukan penilaian diskriminatif.</div></div>
+            <div class="scale-card critical"><div class="scale-label">Skala Kritis — Sc6</div><div class="scale-name">Pa — Paranoia (Paranoia)</div><div class="scale-desc">Kecurigaan berlebihan, sensitivitas ekstrem, keyakinan tidak rasional tentang penganiayaan.</div></div>
+            <div class="scale-card critical"><div class="scale-label">Skala Kritis — Sc7</div><div class="scale-name">Pt — Psychasthenia (Kecemasan)</div><div class="scale-desc">Kecemasan kronis, pikiran obsesif, ketakutan berlebihan yang mengganggu fungsi keseharian.</div></div>
+            <div class="scale-card critical"><div class="scale-label">Skala Kritis — Sc8</div><div class="scale-name">Sc — Schizophrenia (Skizoid)</div><div class="scale-desc">Pemikiran tidak teratur, alienasi sosial, persepsi yang menyimpang dari realitas.</div></div>
+            <div class="scale-card general"><div class="scale-label">Skala Umum — Sc9</div><div class="scale-name">Ma — Hypomania (Hipomania)</div><div class="scale-desc">Impulsivitas tinggi, euforia berlebihan, hiperaktivitas, kurang pertimbangan dalam bertindak.</div></div>
+            <div class="scale-card general"><div class="scale-label">Skala Umum — Sc0</div><div class="scale-name">Si — Social Introversion</div><div class="scale-desc">Penarikan sosial ekstrem, kesulitan kerja tim, hambatan komunikasi interpersonal berat.</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">⚖️ Threshold Penilaian Per Versi Tes</div>
+        <table>
+            <tr><th>Versi Soal</th><th>Evaluasi Validitas</th><th>T Cutoff Klinis</th><th>Skala Kritis → TMS</th><th>Skala Umum → TMS</th><th>Batas Ekstrem</th><th>Label & Toleransi</th></tr>
+            <tr><td><strong>⚡ 50 Soal</strong></td><td><span class="badge-warn">Tidak Diukur</span></td><td>T ≥ 72</td><td>≥ 2 skala</td><td>≥ 4 skala</td><td>T ≥ 82</td><td><span class="badge-warn">Skrining Cepat (Sangat Longgar)</span></td></tr>
+            <tr><td><strong>🎯 120 Soal</strong></td><td><span class="badge-warn">Tidak Diukur</span></td><td>T ≥ 70</td><td>≥ 2 skala</td><td>≥ 3 skala</td><td>T ≥ 80</td><td><span class="badge-warn">Evaluasi Awal (Longgar)</span></td></tr>
+            <tr><td><strong>⭐ 250 Soal</strong></td><td><span class="badge-ms">Diukur (T≥75)</span></td><td>T ≥ 68</td><td>≥ 2 skala</td><td>≥ 3 skala</td><td>T ≥ 78</td><td><span class="badge-ms">Standar KESWA (Toleransi Moderat)</span></td></tr>
+            <tr><td><strong>🏛️ 567 Soal</strong></td><td><span class="badge-ms">Diukur (T≥70)</span></td><td>T ≥ 65</td><td>≥ 1 skala</td><td>≥ 2 skala</td><td>T ≥ 75</td><td><span class="badge-ms">Resmi MMPI-2 (Definitif Ketat)</span></td></tr>
+        </table>
+        <div class="alert info" style="margin-top:14px;">
+            <div class="alert-icon">📌</div>
+            <div><strong>Hierarki Penilaian KESWA:</strong> Versi 50 & 120 Soal merupakan skrining murni tanpa filter validitas untuk deteksi awal. Versi 250 Soal merupakan standar evaluasi dinas yang proporsional dengan toleransi lebih fleksibel dibanding Versi 567 Soal yang menggunakan standar klinis penuh MMPI-2.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🏁 Matriks 4 Kuadran Interpretasi Hasil Akhir</div>
+        <table>
+            <tr><th>Kuadran & Status</th><th>Kondisi Psikometri</th><th>Status Validitas & Klinis</th><th>Rekomendasi Dinas</th></tr>
+            <tr><td><span class="badge-ms">Kuadran 1: MS — PROFIL VALID</span></td><td>Profil valid & 10 skala klinis normal ($T < \text{Cutoff}$)</td><td>Valid & Bebas Elevasi</td><td><strong>Lolos Seleksi KESWA Definitif</strong></td></tr>
+            <tr><td><span class="badge-tms">Kuadran 2: TMS — PROFIL VALID</span></td><td>Profil valid tapi terindikasi penyimpangan kepribadian nyata ($T \ge \text{Cutoff}$)</td><td>Valid & Elevasi Klinis</td><td><strong>Gugur Medis Jiwa (Stakes 4 / J4)</strong></td></tr>
+            <tr><td><span class="badge-warn">Kuadran 3: TIDAK VALID (MS SEMU)</span></td><td>Skala L tinggi ($T \ge \text{Cutoff}$) akibat Faking Good / mengaku sempurna tanpa cela</td><td>Tidak Valid & Klinis Semu</td><td><strong>Tidak Sah — Wajib Pembekalan Kejujuran & Re-Test</strong></td></tr>
+            <tr><td><span class="badge-warn">Kuadran 4: TIDAK VALID (TMS SEMU)</span></td><td>Skala F tinggi ($T \ge \text{Cutoff}$) akibat respon acak / melebih-lebihkan gejala</td><td>Tidak Valid & Distorsi Respon</td><td><strong>Tidak Sah — Wajib Cek Pemahaman Soal & Re-Test</strong></td></tr>
+        </table>
+        <div class="alert warn" style="margin-top:14px;">
+            <div class="alert-icon">⚠️</div>
+            <div>Status <span class="badge-warn">TIDAK VALID (WAJIB TES ULANG)</span> <strong>bukan vonis gagal mutlak</strong>. Ini menandakan data respon rusak sehingga harus diuji ulang untuk memperoleh data yang objektif dan sah.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TAB 3: TIPS ===== -->
+<div id="tab-tips" class="section">
+
+    <div class="card">
+        <div class="card-title">💡 Prinsip Utama: Jujur dan Spontan</div>
+        <p>Kunci keberhasilan tes KESWA bukan pada "jawaban yang benar" melainkan pada <strong>kejujuran dan spontanitas</strong>. Tes ini dilengkapi sistem deteksi manipulasi (Skala L, F, K) yang sangat sensitif. Upaya memanipulasi jawaban <em>justru meningkatkan risiko TMS</em>.</p>
+        <div class="alert success" style="margin-top:14px;">
+            <div class="alert-icon">🎯</div>
+            <div><strong>Ingat:</strong> Prajurit/anggota yang baik bukan yang sempurna tanpa kekurangan, melainkan yang jujur mengenal dirinya dan mampu mengelola diri dengan baik dalam tugas.</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">✅❌ Yang Harus dan Tidak Boleh Dilakukan</div>
+        <div class="do-dont">
+            <div class="do-box">
+                <h4>✅ LAKUKAN INI</h4>
+                <ul>
+                    <li>Jawab berdasarkan kondisi umum kehidupan sehari-hari</li>
+                    <li>Jawab spontan — ikuti reaksi pertama Anda</li>
+                    <li>Jika tidak yakin, pilih yang paling sering berlaku</li>
+                    <li>Kerjakan dalam kondisi tenang, tidak terburu-buru</li>
+                    <li>Pastikan tidak ada gangguan selama mengerjakan</li>
+                    <li>Baca setiap pernyataan sampai selesai</li>
+                    <li>Jujur terhadap diri sendiri</li>
+                </ul>
+            </div>
+            <div class="dont-box">
+                <h4>❌ JANGAN LAKUKAN INI</h4>
+                <ul>
+                    <li>Jangan menebak "jawaban yang benar"</li>
+                    <li>Jangan menjawab semua YA atau semua TIDAK</li>
+                    <li>Jangan berpikir terlalu lama (&gt;5 detik per soal)</li>
+                    <li>Jangan minta bantuan orang lain</li>
+                    <li>Jangan menjawab berdasarkan bagaimana Anda "ingin dilihat"</li>
+                    <li>Jangan membuka tab lain / mencari jawaban di internet</li>
+                    <li>Jangan mengerjakan dalam kondisi sangat lelah</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🎓 Mengapa Manipulasi Jawaban Selalu Terdeteksi?</div>
+        <table>
+            <tr><th>Strategi Manipulasi</th><th>Yang Terjadi</th><th>Akibat</th></tr>
+            <tr><td>Selalu jawab hal positif dengan YA</td><td>Skala L (Lie) naik drastis</td><td><span class="badge-tms">TMS</span> — Faking Good</td></tr>
+            <tr><td>Semua jawab YA</td><td>Skala F (Infrequency) meledak</td><td><span class="badge-tms">TMS</span> — Tidak Valid</td></tr>
+            <tr><td>Semua jawab TIDAK</td><td>Pola tidak realistis terdeteksi</td><td><span class="badge-tms">TMS</span> — Tidak Valid</td></tr>
+            <tr><td>Jawab secara acak / tidak fokus</td><td>Inkonsistensi pola terdeteksi</td><td><span class="badge-tms">TMS</span> — Profil Tidak Stabil</td></tr>
+            <tr><td>Jawab jujur dan spontan</td><td>Profil valid dan konsisten</td><td><span class="badge-ms">MS</span> — Profil Valid ✅</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🧘 Persiapan Fisik dan Mental Sebelum Tes</div>
+        <div class="steps">
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Istirahat Cukup Malam Sebelumnya</strong>Tidur minimal 7 jam. Kelelahan menyebabkan jawaban tidak konsisten dan meningkatkan risiko TMS.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Makan Sebelum Tes</strong>Jangan kerjakan dalam kondisi lapar. Gula darah rendah mempengaruhi konsentrasi dan mood.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Pastikan Lingkungan Tenang</strong>Cari tempat tenang, jauh dari gangguan. Matikan notifikasi HP selama tes berlangsung.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Baca Petunjuk Dulu</strong>Pastikan sudah memahami cara menjawab sebelum soal pertama. Tes berjalan spontan tanpa jeda.</div></div>
+            <div class="step"><div class="step-num"></div><div class="step-body"><strong>Tidak Perlu Takut atau Cemas</strong>Tes ini bukan untuk menghakimi, melainkan untuk membantu menempatkan Anda pada posisi yang sesuai dengan kepribadian dan kemampuan terbaik Anda.</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">⏱️ Tips Manajemen Waktu</div>
+        <table>
+            <tr><th>Versi</th><th>Total Waktu</th><th>Target Per Soal</th><th>Tips</th></tr>
+            <tr><td>50 Soal</td><td>15 menit</td><td>~18 detik/soal</td><td>Fokus penuh, tidak ada waktu untuk berpikir panjang</td></tr>
+            <tr><td>120 Soal</td><td>30 menit</td><td>~15 detik/soal</td><td>Gunakan keyboard untuk lebih cepat dan spontan</td></tr>
+            <tr><td>250 Soal</td><td>50 menit</td><td>~12 detik/soal</td><td>Sesi tersimpan — bisa istirahat sebentar jika perlu</td></tr>
+            <tr><td>567 Soal</td><td>90 menit</td><td>~9 detik/soal</td><td>Wajib gunakan keyboard. Rencanakan waktu dengan baik.</td></tr>
+        </table>
+        <div class="alert info" style="margin-top:14px;">
+            <div class="alert-icon">⌨️</div>
+            <div><strong>Pro Tip:</strong> Menggunakan tombol keyboard <kbd>1</kbd> dan <kbd>2</kbd> rata-rata <strong>40% lebih cepat</strong> daripada mengklik dengan mouse. Sangat dianjurkan terutama untuk versi 250 dan 567 soal.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TAB 4: ATURAN ===== -->
+<div id="tab-aturan" class="section">
+
+    <div class="card">
+        <div class="card-title">📜 Tata Tertib Tes KESWA</div>
+        <div class="alert danger">
+            <div class="alert-icon">⚠️</div>
+            <div><strong>Pelanggaran terhadap aturan ini dapat mengakibatkan diskualifikasi dan pencatatan dalam rekam medis psikologis peserta.</strong></div>
+        </div>
+        <br>
+        <div class="rule-item"><div class="rule-num">1</div><div><strong>Kerjakan Sendiri — Dilarang Dibantu Orang Lain</strong><br>Tes KESWA adalah penilaian kepribadian individual. Meminta bantuan orang lain menjawab merupakan bentuk pemalsuan data psikologis yang berimplikasi hukum.</div></div>
+        <div class="rule-item"><div class="rule-num">2</div><div><strong>Dilarang Menggunakan Panduan Jawaban dari Luar</strong><br>Dilarang membuka buku panduan, mencari jawaban di internet, atau menggunakan kecerdasan buatan (AI) untuk menjawab soal. Sistem validitas akan mendeteksi pola jawaban yang tidak alami.</div></div>
+        <div class="rule-item"><div class="rule-num">3</div><div><strong>Data Registrasi Harus Akurat</strong><br>Nama, usia, dan jenis kelamin harus sesuai identitas resmi peserta. Data tidak akurat membatalkan hasil tes.</div></div>
+        <div class="rule-item"><div class="rule-num">4</div><div><strong>Tidak Mengerjakan dalam Kondisi Tidak Fit</strong><br>Peserta yang sangat lelah, sakit, terpengaruh obat-obatan, atau dalam tekanan berat wajib melapor kepada penguji sebelum tes dimulai.</div></div>
+        <div class="rule-item"><div class="rule-num">5</div><div><strong>Rahasia Isi Soal</strong><br>Isi pertanyaan tes KESWA bersifat <strong>rahasia terbatas</strong>. Peserta dilarang mendokumentasikan, menyalin, atau menyebarluaskan soal dalam bentuk apapun.</div></div>
+        <div class="rule-item"><div class="rule-num">6</div><div><strong>Kerahasiaan Hasil</strong><br>Hasil tes hanya dapat diakses oleh psikolog/pejabat berwenang dan peserta yang bersangkutan. Dilarang mendistribusikan hasil kepada pihak yang tidak berkepentingan.</div></div>
+        <div class="rule-item"><div class="rule-num">7</div><div><strong>Dilarang Mengulang Tes Tanpa Izin</strong><br>Tes tidak boleh diulang tanpa persetujuan penguji yang berwenang. Interval minimal pengulangan adalah <strong>6 bulan</strong> untuk mencegah efek latihan (practice effect).</div></div>
+        <div class="rule-item"><div class="rule-num">8</div><div><strong>Patuhi Instruksi Penguji</strong><br>Ikuti semua instruksi penguji/psikolog yang bertugas. Penguji berwenang menghentikan tes jika ada indikasi pelanggaran atau kondisi tidak kondusif.</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">👮 Hak dan Kewajiban Peserta</div>
+        <div class="do-dont">
+            <div class="do-box">
+                <h4>✅ HAK PESERTA</h4>
+                <ul>
+                    <li>Mendapat penjelasan tujuan dan prosedur tes sebelum dimulai</li>
+                    <li>Mengajukan pertanyaan kepada penguji sebelum tes mulai</li>
+                    <li>Mendapat hasil tes yang telah diinterpretasi</li>
+                    <li>Mendapat penjelasan dari psikolog terkait hasil tes</li>
+                    <li>Melanjutkan sesi yang terputus dalam waktu 24 jam</li>
+                    <li>Mengajukan keberatan melalui prosedur resmi yang berlaku</li>
+                </ul>
+            </div>
+            <div class="dont-box">
+                <h4>📋 KEWAJIBAN PESERTA</h4>
+                <ul>
+                    <li>Menjawab dengan jujur berdasarkan keadaan diri sendiri</li>
+                    <li>Menyelesaikan tes tanpa meninggalkan tempat tanpa izin</li>
+                    <li>Menjaga kerahasiaan isi soal dan hasil tes</li>
+                    <li>Melaporkan kondisi kesehatan yang dapat mempengaruhi tes</li>
+                    <li>Tidak mencoba memanipulasi atau memalsukan jawaban</li>
+                    <li>Menyerahkan hasil cetak kepada penguji jika diminta</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🏛️ Dasar Hukum dan Referensi</div>
+        <table>
+            <tr><th>Dokumen / Referensi</th><th>Keterangan</th></tr>
+            <tr><td>MMPI-2 Manual — Butcher et al. (2001)</td><td>Standar psikometri internasional untuk interpretasi T-Score dan skala klinis</td></tr>
+            <tr><td>Keputusan Panglima TNI / Kapolri</td><td>Dasar pelaksanaan seleksi psikologi dan KESWA dalam rekrutmen dan kenaikan pangkat</td></tr>
+            <tr><td>Pedoman Psikologi TNI/POLRI</td><td>Standar pelaksanaan, interpretasi, dan pelaporan hasil tes psikologi kesehatan jiwa</td></tr>
+            <tr><td>UU No. 34/2004 (TNI) &amp; UU No. 2/2002 (Polri)</td><td>Persyaratan kesehatan jasmani dan rohani bagi prajurit dan anggota</td></tr>
+            <tr><td>Peraturan Menteri Kesehatan RI</td><td>Standar pemeriksaan kesehatan jiwa dalam konteks pelayanan kesehatan</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📞 Konsultasi dan Bantuan</div>
+        <div class="alert info">
+            <div class="alert-icon">ℹ️</div>
+            <div>
+                Untuk pertanyaan tentang hasil tes, keberatan atas keputusan, atau membutuhkan konseling psikologis lanjutan:<br><br>
+                <strong>🏥 Satuan Psikologi / Poliklinik Jiwa Satuan</strong><br>
+                <strong>👨‍⚕️ Psikolog / Psikiater yang Bertugas</strong><br>
+                <strong>🏛️ Bagian Personalia Satuan</strong>
+            </div>
+        </div>
+        <div class="alert warn" style="margin-top:12px;">
+            <div class="alert-icon">⚠️</div>
+            <div>Hasil <span class="badge-tms">TMS</span> <strong>bukan berarti gugur secara otomatis</strong>. Ini adalah rekomendasi awal yang memerlukan evaluasi mendalam oleh psikolog atau psikiater yang berwenang. Setiap individu berhak mendapat asesmen lengkap sebelum keputusan final dibuat.</div>
+        </div>
+    </div>
+</div>
+
+</div><!-- end container -->
+
+<div class="page-footer">
+    Dokumen ini disusun berdasarkan standar MMPI-2 (Butcher et al., 2001) dan Pedoman KESWA TNI/POLRI &nbsp;|&nbsp;
+    Untuk keperluan internal — Rahasia Terbatas &nbsp;|&nbsp; © 2026 Sistem KESWA Digital
+</div>
+
+<script>
+function showTab(name, btn) {
+    document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
